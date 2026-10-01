@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Você</title>
+    
+    <!-- Importando Tailwind CSS para estilização utilitária e layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Importando fontes românticas e delicadas do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            /* Fundo suave com gradiente radial (Rosa claro, lilás e lavanda) */
+            background: radial-gradient(circle at center, #fdf4f6 0%, #f3e5f5 50%, #e1bee7 100%);
+            margin: 0;
+            overflow: hidden; /* Previne rolagem */
+            font-family: 'Montserrat', sans-serif;
+            touch-action: manipulation;
+        }
+
+        /* Animação de Florescimento (Bloom) */
+        @keyframes bloom {
+            0% {
+                transform: scale(0) translateY(50px);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.1) translateY(-10px);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animação de Balanço com o vento (Sway) */
+        @keyframes sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        /* Classe que aplica as animações na flor */
+        .flower-container {
+            transform-origin: bottom center;
+            animation: bloom 2s ease-out forwards, sway 6s ease-in-out infinite alternate;
+            /* Atraso no balanço para não conflitar com o crescimento */
+            animation-delay: 0s, 2s; 
+            cursor: pointer;
+            transition: filter 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .flower-container:hover {
+            filter: drop-shadow(0 0 15px rgba(255, 182, 193, 0.8));
+        }
+
+        /* Estilo do Modal com efeito Glassmorphism */
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(190, 144, 212, 0.3);
+            border-radius: 24px;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; /* Desativado enquanto invisível */
+        }
+
+        /* Classe ativa para mostrar o modal */
+        .glass-modal.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .romantic-font {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Brilho pulsante para o botão */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(233, 30, 99, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(233, 30, 99, 0.7); }
+        }
+        
+        .btn-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Canvas precisa ficar no fundo */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col items-center justify-center relative">
+
+    
+    <!-- Canvas para animação de partículas de fundo -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- 
+      🎵 INSTRUÇÕES PARA MÚSICA:
+      Para adicionar uma música, basta descomentar a linha abaixo (remover o <!- - e o - ->)
+      e substituir "sua-musica.mp3" pelo caminho ou link do seu arquivo de áudio.
+      Ex: <audio id="bg-music" src="https://seusite.com/musica.mp3" loop></audio>
+    -->
+    <!-- <audio id="bg-music" src="sua-musica.mp3" loop></audio> -->
+
+    <!-- Contêiner Central da Flor em SVG (Feita com código) -->
+    <div id="flower" class="flower-container flex-grow flex items-center justify-center mt-10">
+        <!-- SVG desenhado com paths e gradientes para formar uma flor delicada -->
+        <svg viewBox="0 0 300 400" class="w-64 md:w-80 h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Gradientes para as pétalas (Rosa para Lavanda) -->
+                <linearGradient id="petal-dark" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#D1C4E9" />
+                    <stop offset="100%" stop-color="#F48FB1" />
+                </linearGradient>
+                <linearGradient id="petal-light" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#E1BEE7" />
+                    <stop offset="100%" stop-color="#FCE4EC" />
+                </linearGradient>
+                <linearGradient id="petal-main" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#CE93D8" />
+                    <stop offset="100%" stop-color="#FF4081" />
+                </linearGradient>
+                <!-- Gradiente para o caule e folhas -->
+                <linearGradient id="stem-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#AED581" />
+                    <stop offset="100%" stop-color="#81C784" />
+                </linearGradient>
+                <!-- Gradiente e brilho para o centro dourado -->
+                <radialGradient id="gold-center" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#FFF59D" />
+                    <stop offset="70%" stop-color="#FFD54F" />
+                    <stop offset="100%" stop-color="#F57F17" />
+                </radialGradient>
+            </defs>
+
+            <!-- Caule -->
+            <path d="M 150 220 Q 140 300 155 400" stroke="url(#stem-green)" stroke-width="6" fill="none" stroke-linecap="round" />
+            
+            <!-- Folha Esquerda -->
+            <path d="M 145 320 Q 90 300 100 260 Q 130 280 148 310" fill="url(#stem-green)" />
+            <!-- Folha Direita -->
+            <path d="M 152 350 Q 210 320 190 280 Q 170 300 148 335" fill="url(#stem-green)" />
+
+            <!-- Grupo de Pétalas da Flor -->
+            <g id="flower-head">
+                <!-- Pétalas de Fundo (Mais escuras) -->
+                <path d="M 150 230 C 90 190, 80 120, 150 90 C 220 120, 210 190, 150 230" fill="url(#petal-dark)" transform="rotate(-30 150 230)" />
+                <path d="M 150 230 C 90 190, 80 120, 150 90 C 220 120, 210 190, 150 230" fill="url(#petal-dark)" transform="rotate(30 150 230)" />
+                
+                <!-- Pétalas Médias (Mais claras) -->
+                <path d="M 150 230 C 110 180, 100 110, 150 80 C 200 110, 190 180, 150 230" fill="url(#petal-light)" transform="rotate(-15 150 230)" />
+                <path d="M 150 230 C 110 180, 100 110, 150 80 C 200 110, 190 180, 150 230" fill="url(#petal-light)" transform="rotate(15 150 230)" />
+                
+                <!-- Pétala Central Frontal (Principal) -->
+                <path d="M 150 230 C 120 180, 110 130, 150 100 C 190 130, 180 180, 150 230" fill="url(#petal-main)" />
+                
+                <!-- Pétalas de Dobra Inferior -->
+                <path d="M 150 230 C 130 200, 110 220, 130 240 C 140 245, 145 240, 150 230" fill="#E91E63" opacity="0.6"/>
+                <path d="M 150 230 C 170 200, 190 220, 170 240 C 160 245, 155 240, 150 230" fill="#E91E63" opacity="0.6"/>
+
+                <!-- Centro da Flor (Dourado) -->
+                <circle cx="150" cy="180" r="15" fill="url(#gold-center)" />
+                <!-- Pequenos pontinhos no centro -->
+                <circle cx="145" cy="175" r="2" fill="#fff" opacity="0.8"/>
+                <circle cx="155" cy="182" r="1.5" fill="#fff" opacity="0.8"/>
+                <circle cx="148" cy="185" r="2" fill="#fff" opacity="0.8"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- Botão Inferior para revelar a mensagem -->
+    <div class="relative z-20 pb-12">
+        <button id="btn-message" class="btn-glow px-8 py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            Clique Aqui
+        </button>
+    </div>
+
+    <!-- Modal da Mensagem Romântica -->
+    <div id="message-modal" class="glass-modal absolute z-30 w-11/12 max-w-md p-8 text-center flex flex-col items-center shadow-2xl">
+        <!-- Botão de Fechar -->
+        <button id="btn-close" class="absolute top-4 right-5 text-gray-500 hover:text-pink-500 transition-colors text-2xl font-bold">
+            &times;
+        </button>
+        
+        <!-- Conteúdo da Mensagem -->
+        <h2 class="romantic-font text-4xl text-pink-600 mb-4 tracking-wide">Para você...</h2>
+        
+        <p class="text-gray-700 leading-relaxed text-lg font-light">
+            Com todo o meu carinho, preparei este pequeno cantinho digital para te lembrar do quanto você é especial. <br><br>
+            Assim como esta flor, meu sentimento por você cresce e floresce a cada dia. <br><br>
+            Amor, venho te escrever esta carta para te relembrar que eu te amo muito. Mesmo que existam dias em que nos magoamos, quero que saiba que eu nunca vou conseguir ficar longe de ti e vou sempre fazer de tudo para cuidar de ti, e resolver todos nossos problemas, me desculpe se ja te fiz mal, quero que fique claro que eu sempre vou fazer de tudo para me resolver com você, eu te amo muito Fernanda.
+        </p>
+
+        <p class="romantic-font text-2xl text-purple-600 mt-6 font-bold">
+            Com amor, Neguinho Malandro
+        </p>
+    </div>
+
+    <script>
+        // Configuração do Canvas (Fundo estrelado/pétalas flutuantes)
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Ajusta tamanho do canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Array para armazenar as partículas
+        const particles = [];
+
+        // Classe da Partícula
+        class Particle {
+            constructor(x, y, isBurst = false) {
+                this.x = x !== undefined ? x : Math.random() * canvas.width;
+                // Se for burst (clique), nasce no local. Se não, nasce no fundo da tela
+                this.y = y !== undefined ? y : canvas.height + Math.random() * 200;
+                
+                // Tipo de partícula: 70% brilho, 30% pétala
+                this.type = Math.random() > 0.7 ? 'petal' : 'glow';
+                
+                // Configurações baseadas no tipo e se é uma explosão (burst)
+                this.size = this.type === 'petal' ? (Math.random() * 4 + 4) : (Math.random() * 2 + 1);
+                
+                const speedModifier = isBurst ? 4 : 1;
+                this.speedX = (Math.random() - 0.5) * 1.5 * speedModifier;
+                this.speedY = isBurst ? (Math.random() - 0.5) * 5 : (Math.random() * -1 - 0.5); // Sobe lentamente se não for burst
+                
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.1;
+                
+                // Vida e opacidade
+                this.life = isBurst ? 1 : Math.random() * 0.5 + 0.5;
+                this.decay = isBurst ? (Math.random() * 0.02 + 0.015) : (Math.random() * 0.005 + 0.002);
+                
+                // Cores da paleta (Rosa, Branco, Dourado, Lavanda)
+                const colors = ['#FCE4EC', '#F48FB1', '#E1BEE7', '#FFF59D', '#FFFFFF'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.angle += this.spin;
+                this.life -= this.decay;
+                
+                // Movimento suave horizontal para partículas de fundo
+                if (this.speedY < 0) {
+                    this.x += Math.sin(this.y * 0.01) * 0.5;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                if (this.type === 'petal') {
+                    // Desenha uma pequena pétala (elipse)
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                } else {
+                    // Desenha um ponto brilhante
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // Loop de Animação Principal do Canvas
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Mantém um número constante de partículas flutuando no fundo
+            if (particles.length < 100) {
+                particles.push(new Particle());
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+
+                // Remove partículas mortas
+                if (p.life <= 0 || p.y < -50 || p.x < -50 || p.x > canvas.width + 50) {
+                    particles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // Interação 1: Clicar na flor cria uma explosão de partículas
+        const flower = document.getElementById('flower');
+        flower.addEventListener('click', (e) => {
+            // Pega o centro da flor
+            const rect = flower.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2 - 20; // -20 ajusta proximo ao centro dourado
+
+            // Cria um "Burst" de partículas
+            for (let i = 0; i < 40; i++) {
+                particles.push(new Particle(centerX, centerY, true));
+            }
+        });
+
+        // Interação 2: Lógica do Modal e Botões
+        const btnMessage = document.getElementById('btn-message');
+        const btnClose = document.getElementById('btn-close');
+        const modal = document.getElementById('message-modal');
+        const bgMusic = document.getElementById('bg-music');
+
+        btnMessage.addEventListener('click', () => {
+            modal.classList.add('active');
+            btnMessage.style.opacity = '0';
+            btnMessage.style.pointerEvents = 'none';
+            
+            // Tenta dar play na música se ela existir
+            if (bgMusic) {
+                bgMusic.play().catch(err => console.log("Áudio precisa de interação ou não configurado."));
+            }
+        });
+
+        btnClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+            btnMessage.style.opacity = '1';
+            btnMessage.style.pointerEvents = 'auto';
+        });
+
+        // Efeito de inicialização extra de partículas (Crescendo junto com a flor)
+        setTimeout(() => {
+            const rect = flower.getBoundingClientRect();
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            for (let i = 0; i < 50; i++) {
+                 particles.push(new Particle(centerX, centerY, true));
+            }
+        }, 1200); // Executa no meio da animação de bloom do CSS
+        
+    </script>
+</body>
+</html>
